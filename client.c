@@ -41,20 +41,20 @@ int main() {
     pthread_t thread;
 
     // Création du socket
-    client_socket = socket(AF_INET, SOCK_STREAM, 0);
+    client_socket = socket(AF_UNIX, SOCK_STREAM, 0);
     if (client_socket == -1) {
-        perror("Error creating socket");
+        perror("Le socket n'a pas pu être créé");
         exit(EXIT_FAILURE);
     }
 
     // Configuration de l'adresse du serveur
-    server_addr.sin_family = AF_INET;
+    server_addr.sin_family = AF_UNIX;
     server_addr.sin_port = htons(8888);
     inet_pton(AF_INET, server_ip, &server_addr.sin_addr);
 
     // Connexion au serveur
     if (connect(client_socket, (sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
-        perror("Error connecting to server");
+        perror("La connexion au serveur n'a pas pu s'établir");
         exit(EXIT_FAILURE);
     }
 
