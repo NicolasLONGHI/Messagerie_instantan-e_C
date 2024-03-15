@@ -36,6 +36,7 @@ void sigint_handler(int signum) {
 
 int main() {
     struct sockaddr_in server_addr;
+    struct sockaddr sockaddr ;
     char server_ip[] = "127.0.0.1"; // Adresse IP du serveur
     pthread_t thread;
 
@@ -52,7 +53,7 @@ int main() {
     inet_pton(AF_INET, server_ip, &server_addr.sin_addr);
 
     // Connexion au serveur
-    if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
+    if (connect(client_socket, (sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
         perror("Error connecting to server");
         exit(EXIT_FAILURE);
     }
