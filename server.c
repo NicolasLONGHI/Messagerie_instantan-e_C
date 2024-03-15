@@ -44,7 +44,6 @@ void *handle_client(void *arg) {
 
 int main() {
     int server_socket, client_socket;
-    struct sockaddr sockaddr ;
     struct sockaddr_in server_addr, client_addr;
     socklen_t client_len = sizeof(client_addr);
 
@@ -61,7 +60,7 @@ int main() {
     server_addr.sin_port = htons(8888);
 
     // Attachement du socket à l'adresse
-    if (bind(server_socket, (sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
+    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
         perror("Error binding");
         exit(EXIT_FAILURE);
     }
@@ -76,7 +75,7 @@ int main() {
 
     // Acceptation des connexions entrantes
     while (1) {
-        client_socket = accept(server_socket, (sockaddr *)&client_addr, &client_len);
+        client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &client_len);
         if (client_socket == -1) {
             perror("Error accepting connection");
             continue;
