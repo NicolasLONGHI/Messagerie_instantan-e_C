@@ -6,62 +6,79 @@
 #include <pthread.h>
 #include <signal.h>
 
-#define BUFFER_SIZE 1024
+#define TAILLE_BUFFER 1024
 
 int client_socket;
 
 // Fonction pour gérer la réception des messages du serveur
-void *receive_messages(void *arg) {
-    char buffer[BUFFER_SIZE];
+void *recevoirMessages(void *arg) {
+    char messageBuffer[TAILLE_BUFFER];
 
     while (1) {
-        int recv_size = recv(client_socket, buffer, BUFFER_SIZE, 0);
-        if (recv_size <= 0) {
-            printf("Server disconnected\n");
+        int read_size = read(client_socket, messageBuffer, TAILLE_BUFFER);
+        if (read_size <= 0) {
+            printf("Serveur déconnecté\n");
             close(client_socket);
             exit(EXIT_FAILURE);
         }
 
-        printf("Message from server: %s", buffer);
+        printf("Message du serveur: %s", messageBuffer);
     }
 }
 
 // Fonction pour gérer l'interruption de l'affichage
-void sigint_handler(int signum) {
-    printf("\nType your message: ");
-    char message[BUFFER_SIZE];
-    fgets(message, BUFFER_SIZE, stdin);
-    send(client_socket, message, strlen(message), 0);
+void arreterAffichage(int signum) {
+    printf("\nSaisissez votre message: ");
+    char message[TAILLE_BUFFER];
+    fgets(message, TAILLE_BUFFER, stdin);
+    write(client_socket, message, strlen(message));
 }
 
 int main() {
+    printf("Veuillez entrer les informations requises :\n\t- IP (127.0.0.1 par défaut): ");
+    char ipServeur[16];
+    fgets(ipServeur, 16, stdin);
+    if (ipServeur[0] == '\n') {
+        strcpy(ipServeur, "127.0.0.1"); 
+    }
+    printf("\t- Port (8888 par défaut) : ");
+    int portServeur;
+    char entreePort[20];
+    fgets(entreePort, sizeof(entreePort), stdin);
+    if (sscanf(entreePort, "%d", &portServeur) != 1) {
+        portServeur = 8888;
+    }
+
+
     struct sockaddr_in server_addr;
-    char server_ip[] = "127.0.0.1"; // Adresse IP du serveur
     pthread_t thread;
 
     // Création du socket
-    client_socket = socket(AF_INET, SOCK_STREAM, 0);
+    client_socket = socket(AF_UNIX, SOCK_STREAM, 0);
     if (client_socket == -1) {
-        perror("Error creating socket");
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "Erreur lors de la création du socket\n");
+        return 1;
     }
 
     // Configuration de l'adresse du serveur
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(8888);
-    inet_pton(AF_INET, server_ip, &server_addr.sin_addr);
+    server_addr.sin_family = AF_UNIX;
+    server_addr.sin_port = htons(portServeur);
+    inet_pton(AF_UNIX, ipServeur, &server_addr.sin_addr);
 
     // Connexion au serveur
     if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
-        perror("Error connecting to server");
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "Erreur lors de la connexion au serveur\n");
+        close(client_socket);
+        return 1;
     }
 
+    printf("Connexion au serveur réussi");
+
     // Création d'un thread pour recevoir les messages du serveur
-    pthread_create(&thread, NULL, receive_messages, NULL);
+    pthread_create(&thread, NULL, recevoirMessages, NULL);
 
     // Gestion de l'interruption de l'affichage pour écrire un message
-    signal(SIGINT, sigint_handler);
+    signal(SIGINT, arreterAffichage);
 
     // Boucle principale pour envoyer des messages
     while (1) {

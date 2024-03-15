@@ -5,8 +5,9 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 
-#define MAX_CLIENTS 10
-#define BUFFER_SIZE 1024
+#define NB_MAX_CLIENTS 10
+#define TAILLE_BUFFER 1024
+#define PORT 8888
 
 // Structure pour stocker les informations des clients
 typedef struct {
@@ -15,20 +16,20 @@ typedef struct {
     struct sockaddr_in address;
 } client_info;
 
-client_info clients[MAX_CLIENTS];
-pthread_t threads[MAX_CLIENTS];
+client_info clients[NB_MAX_CLIENTS];
+pthread_t threads[NB_MAX_CLIENTS];
 int num_clients = 0;
 
-// Fonction pour gérer la connexion d'un client
-void *handle_client(void *arg) {
+// Fonction thread pour gérer la connexion d'un client
+void *nouvelleConnexion(void *arg) {
     int client_id = *((int *)arg);
-    char buffer[BUFFER_SIZE];
+    char messageBuffer[TAILLE_BUFFER];
 
     while (1) {
         // Réception du message du client
-        int recv_size = recv(clients[client_id].socket, buffer, BUFFER_SIZE, 0);
-        if (recv_size <= 0) {
-            printf("Client %d disconnected\n", client_id);
+        int read_size = read(clients[client_id].socket, messageBuffer, TAILLE_BUFFER);
+        if (read_size <= 0) {
+            printf("Client %d déconnecté\n", client_id);
             close(clients[client_id].socket);
             pthread_exit(NULL);
         }
@@ -36,7 +37,7 @@ void *handle_client(void *arg) {
         // Envoi du message reçu à tous les clients
         for (int i = 0; i < num_clients; i++) {
             if (i != client_id) {
-                send(clients[i].socket, buffer, recv_size, 0);
+                write(clients[i].socket, messageBuffer, read_size);
             }
         }
     }
@@ -48,36 +49,38 @@ int main() {
     socklen_t client_len = sizeof(client_addr);
 
     // Création du socket
-    server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    server_socket = socket(AF_UNIX, SOCK_STREAM, 0);
     if (server_socket == -1) {
-        perror("Error creating socket");
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "Erreur lors de la création du socket\n");
+        return 1;
     }
 
     // Configuration de l'adresse du serveur
-    server_addr.sin_family = AF_INET;
+    server_addr.sin_family = AF_UNIX;
     server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(8888);
+    server_addr.sin_port = htons(PORT);
 
     // Attachement du socket à l'adresse
-    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
-        perror("Error binding");
-        exit(EXIT_FAILURE);
+    int checkBind = bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr));
+    if (checkBind == -1) {
+        fprintf(stderr, "Erreur lors de l'attachement (bind)\n");
+        return 1;
     }
 
     // Écoute des connexions entrantes
-    if (listen(server_socket, 5) == -1) {
-        perror("Error listening");
-        exit(EXIT_FAILURE);
+    int checkListen = listen(server_socket, 5);
+    if (checkListen == -1) {
+        fprintf(stderr, "Erreur lors de l'écoute\n");
+        return 1;
     }
 
-    printf("Server listening on port 8888\n");
+    printf("Attente de connexion sur le port %d ...\n", PORT);
 
     // Acceptation des connexions entrantes
     while (1) {
         client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &client_len);
         if (client_socket == -1) {
-            perror("Error accepting connection");
+            fprintf(stderr, "Erreur lors de l'acceptation de la connexion\n");
             continue;
         }
 
@@ -87,7 +90,7 @@ int main() {
         clients[num_clients].address = client_addr;
 
         // Création d'un thread pour gérer ce client
-        pthread_create(&threads[num_clients], NULL, handle_client, (void *)&clients[num_clients].id);
+        pthread_create(&threads[num_clients], NULL, nouvelleConnexion, (void *)&clients[num_clients].id);
 
         num_clients++;
     }
