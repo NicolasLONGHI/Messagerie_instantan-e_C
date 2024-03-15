@@ -44,23 +44,24 @@ void *handle_client(void *arg) {
 
 int main() {
     int server_socket, client_socket;
+    struct sockaddr sockaddr ;
     struct sockaddr_in server_addr, client_addr;
     socklen_t client_len = sizeof(client_addr);
 
     // Création du socket
-    server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    server_socket = socket(AF_UNIX, SOCK_STREAM, 0);
     if (server_socket == -1) {
         perror("Error creating socket");
         exit(EXIT_FAILURE);
     }
 
     // Configuration de l'adresse du serveur
-    server_addr.sin_family = AF_INET;
+    server_addr.sin_family = AF_UNIX;
     server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(8888);
 
     // Attachement du socket à l'adresse
-    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
+    if (bind(server_socket, (sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
         perror("Error binding");
         exit(EXIT_FAILURE);
     }
@@ -75,7 +76,7 @@ int main() {
 
     // Acceptation des connexions entrantes
     while (1) {
-        client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &client_len);
+        client_socket = accept(server_socket, (sockaddr *)&client_addr, &client_len);
         if (client_socket == -1) {
             perror("Error accepting connection");
             continue;
