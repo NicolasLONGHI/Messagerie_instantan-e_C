@@ -17,12 +17,12 @@ void *recevoirMessages(void *arg) {
     while (1) {
         int read_size = read(client_socket, messageBuffer, TAILLE_BUFFER);
         if (read_size <= 0) {
-            printf("Serveur déconnecté\n");
+            printf("Déconnecté\n");
             close(client_socket);
             exit(EXIT_FAILURE);
         }
 
-        printf("Message du serveur: %s", messageBuffer);
+        printf("%s", messageBuffer);
     }
 }
 
@@ -31,11 +31,15 @@ void arreterAffichage(int signum) {
     printf("\nSaisissez votre message: ");
     char message[TAILLE_BUFFER];
     fgets(message, TAILLE_BUFFER, stdin);
+    if (strcmp(message, "exit\n\0") == 0) {
+        close(client_socket);
+        exit(EXIT_SUCCESS);
+    }
     write(client_socket, message, strlen(message));
 }
 
 int main() {
-    printf("Veuillez entrer les informations requises :\n\t- IP (127.0.0.1 par défaut): ");
+    printf("Veuillez entrer les informations de connexion :\n\t- IP (127.0.0.1 par défaut): ");
     char ipServeur[16];
     fgets(ipServeur, 16, stdin);
     if (ipServeur[0] == '\n') {
@@ -54,16 +58,16 @@ int main() {
     pthread_t thread;
 
     // Création du socket
-    client_socket = socket(AF_UNIX, SOCK_STREAM, 0);
+    client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket == -1) {
         fprintf(stderr, "Erreur lors de la création du socket\n");
         return 1;
     }
 
     // Configuration de l'adresse du serveur
-    server_addr.sin_family = AF_UNIX;
+    server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(portServeur);
-    inet_pton(AF_UNIX, ipServeur, &server_addr.sin_addr);
+    inet_pton(AF_INET, ipServeur, &server_addr.sin_addr);
 
     // Connexion au serveur
     if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
@@ -72,7 +76,7 @@ int main() {
         return 1;
     }
 
-    printf("Connexion au serveur réussi");
+    printf("Connexion au serveur réussi\n");
 
     // Création d'un thread pour recevoir les messages du serveur
     pthread_create(&thread, NULL, recevoirMessages, NULL);
