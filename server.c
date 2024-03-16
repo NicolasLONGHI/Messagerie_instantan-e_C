@@ -16,6 +16,8 @@ typedef struct {
     int id;
     int socket;
     struct sockaddr_in address;
+    char nomUtilisateur[21];
+    int nbMessage;
 } client_info;
 
 client_info clients[NB_MAX_CLIENTS];
@@ -30,21 +32,30 @@ void *nouvelleConnexion(void *arg) {
 
     while (1) {
         // Réception du message du client
+        memset(messageBuffer, 0, TAILLE_BUFFER);
         int read_size = read(clients[client_id].socket, messageBuffer, TAILLE_BUFFER);
         if (read_size <= 0) {
             printf("Client %d déconnecté\n", client_id);
             close(clients[client_id].socket);
             pthread_exit(NULL);
         }
-        char messageBufferModifie[TAILLE_BUFFER];
-        sprintf(messageBufferModifie, "[Utilisateur %d] : %s", client_id, messageBuffer);
-    
-        // Envoi du message reçu à tous les clients
-        for (int i = 0; i < num_clients; i++) {
-            if (i != client_id) {
-                write(clients[i].socket, messageBufferModifie, strlen(messageBufferModifie));
+        if (clients[client_id].nbMessage == 0) {
+            sprintf(clients[client_id].nomUtilisateur, "%s", messageBuffer);
+        }
+        else {
+            char messageBufferModifie[TAILLE_BUFFER + 27];
+            memset(messageBufferModifie, 0, TAILLE_BUFFER + 27);
+            sprintf(messageBufferModifie, "[%s] : %s", clients[client_id].nomUtilisateur, messageBuffer);
+        
+            printf("%s", messageBufferModifie);
+            // Envoi du message reçu à tous les clients
+            for (int i = 0; i < num_clients; i++) {
+                if (i != client_id) {
+                    write(clients[i].socket, messageBufferModifie, strlen(messageBufferModifie));
+                }
             }
         }
+        clients[client_id].nbMessage++;
     }
 }
 

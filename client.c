@@ -15,13 +15,13 @@ void *recevoirMessages(void *arg) {
     char messageBuffer[TAILLE_BUFFER];
 
     while (1) {
+        memset(messageBuffer, 0, TAILLE_BUFFER);
         int read_size = read(client_socket, messageBuffer, TAILLE_BUFFER);
         if (read_size <= 0) {
             printf("Déconnecté\n");
             close(client_socket);
             exit(EXIT_FAILURE);
         }
-
         printf("%s", messageBuffer);
     }
 }
@@ -45,6 +45,7 @@ int main() {
     if (ipServeur[0] == '\n') {
         strcpy(ipServeur, "127.0.0.1"); 
     }
+
     printf("\t- Port (8888 par défaut) : ");
     int portServeur;
     char entreePort[20];
@@ -52,6 +53,11 @@ int main() {
     if (sscanf(entreePort, "%d", &portServeur) != 1) {
         portServeur = 8888;
     }
+
+    printf("\t- Votre nom d'utilisateur : ");
+    char nomUtilisateur[21];
+    fgets(nomUtilisateur, sizeof(nomUtilisateur), stdin);
+    nomUtilisateur[strcspn(nomUtilisateur, "\n")] = '\0';
 
 
     struct sockaddr_in server_addr;
@@ -76,6 +82,7 @@ int main() {
         return 1;
     }
 
+    write(client_socket, nomUtilisateur, strlen(nomUtilisateur));
     printf("Connexion au serveur réussi\n");
 
     // Création d'un thread pour recevoir les messages du serveur
