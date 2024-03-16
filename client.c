@@ -7,8 +7,12 @@
 #include <signal.h>
 
 #define TAILLE_BUFFER 1024
+#define MAX_MESSAGE_STOCKE 100
 
 int client_socket;
+int entrainEcrire = 0;
+char **listeMessages;
+int numMessage = 0;
 
 // Fonction pour gérer la réception des messages du serveur
 void *recevoirMessages(void *arg) {
@@ -22,12 +26,28 @@ void *recevoirMessages(void *arg) {
             close(client_socket);
             exit(EXIT_FAILURE);
         }
-        printf("%s", messageBuffer);
+        if (entrainEcrire == 0) {
+            printf("%s", messageBuffer);
+        }
+        else {
+            listeMessages[numMessage] = (char *)malloc(TAILLE_BUFFER * sizeof(char));
+            if (listeMessages[numMessage] == NULL) {
+                fprintf(stderr, "Erreur lors de l'allocation de la mémoire\n");
+                exit(EXIT_FAILURE);
+            }
+            strcpy(listeMessages[numMessage], messageBuffer);
+            numMessage++;
+        }
     }
+}
+
+void creerTableau() {
+    listeMessages = (char **)malloc(MAX_MESSAGE_STOCKE * sizeof(char *));
 }
 
 // Fonction pour gérer l'interruption de l'affichage
 void arreterAffichage(int signum) {
+    entrainEcrire = 1;
     printf("\nSaisissez votre message: ");
     char message[TAILLE_BUFFER];
     fgets(message, TAILLE_BUFFER, stdin);
@@ -36,6 +56,20 @@ void arreterAffichage(int signum) {
         exit(EXIT_SUCCESS);
     }
     write(client_socket, message, strlen(message));
+
+    if (numMessage != 0) {
+        for (int i = 0 ; i < numMessage ; i++) {
+            printf("%s", listeMessages[i]);
+        }
+
+        for (int i = 0 ; i < numMessage ; i++) {
+            free(listeMessages[i]);
+        }
+        free(listeMessages);
+        numMessage = 0;
+        creerTableau();
+    }
+    entrainEcrire = 0;
 }
 
 int main() {
@@ -84,6 +118,7 @@ int main() {
 
     write(client_socket, nomUtilisateur, strlen(nomUtilisateur));
     printf("Connexion au serveur réussi\n");
+    creerTableau();
 
     // Création d'un thread pour recevoir les messages du serveur
     pthread_create(&thread, NULL, recevoirMessages, NULL);
