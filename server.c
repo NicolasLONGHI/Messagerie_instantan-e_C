@@ -77,6 +77,10 @@ void entrerCommande(int signum) {
     else if (strcmp(commande, "port\n\0") == 0) {
         //changement de port dans le fichier de configuration
     }
+    else if (strcmp(commande, "help\n\0") == 0) {
+        printf("Les commandes disponibles :\n\tmessage : Envoyer un message à tous les clients connectés\n\tport : Modifier le port du serveur\n");
+        printf("\thelp : Connaître toutes les commandes\n\texit : Fermer le serveur\n");
+    }
     else if (strcmp(commande, "exit\n\0") == 0) {
         close(server_socket);
         exit(EXIT_SUCCESS);

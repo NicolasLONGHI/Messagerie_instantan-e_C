@@ -76,10 +76,10 @@ int main() {
     printf("Veuillez entrer les informations de connexion :\n\t- IP (127.0.0.1 par défaut): ");
     char ipServeur[16];
     fgets(ipServeur, 16, stdin);
-    ipServeur[strcspn(ipServeur, "\n")] = '\0';
     if (ipServeur[0] == '\n') {
         strcpy(ipServeur, "127.0.0.1"); 
     }
+    ipServeur[strcspn(ipServeur, "\n")] = '\0';
 
     printf("\t- Port (8888 par défaut) : ");
     int portServeur;
