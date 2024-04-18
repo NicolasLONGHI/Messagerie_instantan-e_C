@@ -14,7 +14,7 @@ int entrainEcrire = 0;
 char **listeMessages;
 int numMessage = 0;
 
-// Fonction pour gérer la réception des messages du serveur
+
 void *recevoirMessages(void *arg) {
     char messageBuffer[TAILLE_BUFFER];
 
@@ -45,7 +45,6 @@ void creerTableau() {
     listeMessages = (char **)malloc(MAX_MESSAGE_STOCKE * sizeof(char *));
 }
 
-// Fonction pour gérer l'interruption de l'affichage
 void arreterAffichage(int signum) {
     entrainEcrire = 1;
     printf("\nSaisissez votre message: ");
@@ -98,7 +97,6 @@ int main() {
     struct sockaddr_in server_addr;
     pthread_t thread;
 
-    // Création du socket
     client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket == -1) {
         fprintf(stderr, "Erreur lors de la création du socket\n");
@@ -110,8 +108,8 @@ int main() {
     server_addr.sin_port = htons(portServeur);
     inet_pton(AF_INET, ipServeur, &server_addr.sin_addr);
 
-    // Connexion au serveur
-    if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
+    int checkConnect = connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr));
+    if (checkConnect == -1) {
         fprintf(stderr, "Erreur lors de la connexion au serveur\n");
         close(client_socket);
         return 1;
@@ -121,16 +119,12 @@ int main() {
     printf("Connexion au serveur réussi\n");
     creerTableau();
 
-    // Création d'un thread pour recevoir les messages du serveur
     pthread_create(&thread, NULL, recevoirMessages, NULL);
 
-    // Gestion de l'interruption de l'affichage pour écrire un message
     signal(SIGINT, arreterAffichage);
 
-    // Boucle principale pour envoyer des messages
     while (1) {
-        // Attente de l'interruption de l'affichage pour écrire un message
-        pause();
+        pause(); //Attend un signal pour écrire un message
     }
 
     close(client_socket);
