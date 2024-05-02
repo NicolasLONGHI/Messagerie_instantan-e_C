@@ -10,14 +10,14 @@ Nous avons lancé sur un VPS personnel le programme server.c ce qui permet de s'
 
 ## Ajouts
 Nous avons ajoutés quelques fonctionnalités, les voici : 
-    - Commandes pour le serveur : 
+- Commandes pour le serveur : 
         - message <votreMessage> : Envoie un message depuis le serveur à tous les clients connecté avec le nom du serveur en rouge
         - show : Affiche ou n'affiche plus les messages envoyés par les clients dans la console du serveur
         - help : Affiche la description de toutes les commandes disponibles sur le serveur
         - exit : ferme toutes les connexions en cours et ferme le programme
-    - Pseudo pour chaque client
-    - Possiblité de choisir l'adresse IP et le port du serveur auquel nous voulons nous connecter
-    - Possiblité de modifier le port du serveur dans le fichier port.txt
+- Pseudo pour chaque client
+- Possiblité de choisir l'adresse IP et le port du serveur auquel nous voulons nous connecter
+- Possiblité de modifier le port du serveur dans le fichier port.txt
 
 ## Composition du projet
 
