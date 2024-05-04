@@ -12,7 +12,7 @@ Nous avons lancé sur un VPS personnel le programme server.c ce qui permet de s'
 Nous avons ajouté des fonctionnalités supplémentaires à celles demandées dans la consigne du projet, les voici : 
 
 - Commandes supplémentaires pour le serveur : 
-  - message votreMessage : Envoie un message depuis le serveur à tous les clients connectés avec le nom du serveur en rouge
+  - message : Demande de saisir un message qui sera envoyé, depuis le serveur, à tous les clients connectés avec le nom du serveur en rouge
   - show : Affiche ou n'affiche plus les messages envoyés par les clients dans la console du serveur
   - help : Affiche la description de toutes les commandes disponibles sur le serveur
   - exit : Ferme toutes les connexions en cours et ferme le programme
