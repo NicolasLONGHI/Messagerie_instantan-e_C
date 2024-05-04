@@ -6,8 +6,8 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <signal.h>
-#include <string.h> // Pour strerror
-#include <errno.h>  // Pour errno
+#include <string.h>
+#include <errno.h> 
 
 #define NB_MAX_CLIENTS 10
 #define TAILLE_BUFFER 1024
@@ -52,7 +52,7 @@ void *nouvelleConnexion(void *arg) {
             if (afficherMessage == 1) {
                 printf("%s", messageBufferModifie);
             }
-            //Envoi du message à tous les clients
+            
             for (int i = 0; i < num_clients; i++) {
                 if (i != client_id) {
                     write(clients[i].socket, messageBufferModifie, strlen(messageBufferModifie));
@@ -106,7 +106,6 @@ void lirePort() {
         exit(EXIT_FAILURE);
     }
 
-    // Lecture du numéro de port
     char buffer[7];
     ssize_t checkRead = read(fichier, buffer, 6); //lecture
     if (checkRead == -1) {
@@ -153,7 +152,6 @@ int main() {
         return 1;
     }
 
-    //Configuration de l'adresse du serveur
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(port);
@@ -165,7 +163,7 @@ int main() {
         return 1;
     }
 
-    int checkListen = listen(server_socket, NB_MAX_CLIENTS); //Attend les connexions entrantes
+    int checkListen = listen(server_socket, NB_MAX_CLIENTS);
     if (checkListen == -1) {
         fprintf(stderr, "Erreur lors de l'écoute\n");
         return 1;
