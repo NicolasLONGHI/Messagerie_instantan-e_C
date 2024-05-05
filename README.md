@@ -15,7 +15,7 @@ Nous avons ajouté des fonctionnalités supplémentaires à celles demandées da
 
 - Commandes supplémentaires pour le serveur : 
   - message : Demande de saisir un message qui sera envoyé, depuis le serveur, à tous les clients connectés avec le nom du serveur en rouge
-  - show : Affiche ou n'affiche plus les messages envoyés par les clients dans la console du serveur ( pour changer le mode ( passer d'afficher à ne plus afficher ou de ne plus afficher à afficher, retaper la commande show )
+  - show : Affiche ou n'affiche plus les messages envoyés par les clients dans la console du serveur (pour changer le mode / passer d'afficher à ne plus afficher ou de ne plus afficher à afficher, retaper la commande show)
   - help : Affiche la description de toutes les commandes disponibles sur le serveur
   - exit : Ferme toutes les connexions en cours et ferme le programme
     
