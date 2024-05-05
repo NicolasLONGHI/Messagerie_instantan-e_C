@@ -1,5 +1,7 @@
 # Messagerie_instantanee_C
 
+Longhi Nicolas, Rault Justine, Duboscq Maxime
+
 ## Description
 Le but du projet consiste en la création d'un fichier server.c qui gère les connexions entrantes àl'aide de sockets et de threads. Le fichier client.c permet la connexion vers le serveur que l'on désire (en entrant l'adresse IP et le port du serveur).
 
