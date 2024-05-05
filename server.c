@@ -29,7 +29,7 @@ int afficherMessage = 1;
 const char *nomFichierConfig = "port.txt";
 int port = 8888;
 
-//Fonction qui est un thread executé à chaque nouvelle connexion d'un client
+//Fonction qui est un thread executée à chaque nouvelle connexion d'un client
 void *nouvelleConnexion(void *arg) {
     int client_id = *((int *)arg);
     char messageBuffer[TAILLE_BUFFER];
@@ -103,7 +103,7 @@ void entrerCommande(int signum) {
     }
 }
 
-//Fonction appelée à chaque démmarage du serveur afin de démarrer la socket sur le port voulu dans le fichier port.txt
+//Fonction appelée à chaque démarrage du serveur afin de démarrer la socket sur le port voulu dans le fichier port.txt
 //Gère toutes les erreurs pouvant provenir de la lecture du fichier (données incorrectes, accès impossible, fichier inexistant)
 void lirePort() {
     int fichier = open(nomFichierConfig, O_RDWR | O_CREAT, 0666); //ouvrir
@@ -158,7 +158,7 @@ int main() {
         fprintf(stderr, "Erreur lors de la création du socket\n");
         return 1;
     }
-    
+
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(port);
