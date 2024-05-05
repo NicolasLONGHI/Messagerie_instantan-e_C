@@ -28,6 +28,7 @@ int server_socket;
 int afficherMessage = 1;
 const char *nomFichierConfig = "port.txt";
 int port = 8888;
+pthread_mutex_t mutexClientID;
 
 //Fonction qui est un thread executée à chaque nouvelle connexion d'un client
 void *nouvelleConnexion(void *arg) {
@@ -39,7 +40,9 @@ void *nouvelleConnexion(void *arg) {
         int read_size = read(clients[client_id].socket, messageBuffer, TAILLE_BUFFER);
         if (read_size <= 0) {
             printf("Client %d déconnecté\n", client_id);
+            pthread_mutex_lock(&mutexClientID);
             clients[client_id].id = -1; //supprime l'id du client qui se déconnecte pour éviter d'avoir le même id si le client se connecte dans le même terminal
+            pthread_mutex_unlock(&mutexClientID);
             close(clients[client_id].socket);
             pthread_exit(NULL);
         }
@@ -99,6 +102,7 @@ void entrerCommande(int signum) {
     else if (strcmp(commande, "exit\n\0") == 0) {
         printf("Fermeture du serveur\n");
         close(server_socket);
+        pthread_mutex_destroy(&mutexClientID);
         exit(EXIT_SUCCESS);
     }
 }
@@ -151,6 +155,8 @@ int main() {
     struct sockaddr_in server_addr, client_addr;
     socklen_t client_len = sizeof(client_addr);
 
+    pthread_mutex_init(&mutexClientID, NULL);
+
     lirePort();    
 
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -200,6 +206,7 @@ int main() {
         num_clients++;
     }
 
+    pthread_mutex_destroy(&mutexClientID);
     close(server_socket);
 
     return 0;
