@@ -15,7 +15,7 @@ char **listeMessages;
 int numMessage = 0;
 
 
-//Fonction qui est un thrad qui est executé à la connexion à un serveur et qui écoute le serveur pour afficher tous les nouveaux messages
+//Fonction qui est un thread qui est exécutée à la connexion à un serveur et qui écoute le serveur pour afficher tous les nouveaux messages
 void *recevoirMessages(void *arg) {
     char messageBuffer[TAILLE_BUFFER];
 
@@ -62,7 +62,7 @@ void arreterAffichage(int signum) {
     }
     write(client_socket, message, strlen(message));
 
-    //affiche tous les messages reçu pendant la saisit du client et réinisialise le tableau des messages
+    //affiche tous les messages reçu pendant la saisie du client et réinisialise le tableau des messages
     if (numMessage != 0) {
         for (int i = 0 ; i < numMessage ; i++) {
             printf("%s", listeMessages[i]);
