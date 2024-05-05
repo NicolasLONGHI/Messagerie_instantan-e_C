@@ -18,7 +18,8 @@ Nous avons ajouté des fonctionnalités supplémentaires à celles demandées da
   - show : Affiche ou n'affiche plus les messages envoyés par les clients dans la console du serveur ( pour changer le mode ( passer d'afficher à ne plus afficher ou de ne plus afficher à afficher, retaper la commande show )
   - help : Affiche la description de toutes les commandes disponibles sur le serveur
   - exit : Ferme toutes les connexions en cours et ferme le programme
-  Pour executer l'une de ces commandes, faire ctrl+c puis taper la commande 
+    
+  Pour executer l'une de ces commandes, faire ctrl+c puis taper la commande en question
     
 - Pseudo pour chaque client ( vous avez donc la possibilité de choisir votre propre nom en tant que client)
 - Possibilité de choisir l'adresse IP et le port du serveur auquel nous voulons nous connecter
