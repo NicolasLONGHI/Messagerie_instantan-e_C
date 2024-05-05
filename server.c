@@ -29,6 +29,7 @@ int afficherMessage = 1;
 const char *nomFichierConfig = "port.txt";
 int port = 8888;
 
+//Fonction qui est un thread executé à chaque nouvelle connexion d'un client
 void *nouvelleConnexion(void *arg) {
     int client_id = *((int *)arg);
     char messageBuffer[TAILLE_BUFFER];
@@ -38,6 +39,7 @@ void *nouvelleConnexion(void *arg) {
         int read_size = read(clients[client_id].socket, messageBuffer, TAILLE_BUFFER);
         if (read_size <= 0) {
             printf("Client %d déconnecté\n", client_id);
+            clients[client_id].id = -1; //supprime l'id du client qui se déconnecte pour éviter d'avoir le même id si le client se connecte dans le même terminal
             close(clients[client_id].socket);
             pthread_exit(NULL);
         }
@@ -45,16 +47,18 @@ void *nouvelleConnexion(void *arg) {
             sprintf(clients[client_id].nomUtilisateur, "%s", messageBuffer);
         }
         else {
+            //concatene le message pour avoir le pseudo + l'id du client en préfixe de son message
             char messageBufferModifie[TAILLE_BUFFER + 27];
             memset(messageBufferModifie, 0, TAILLE_BUFFER + 27);
-            sprintf(messageBufferModifie, "[%s] : %s", clients[client_id].nomUtilisateur, messageBuffer);
+            sprintf(messageBufferModifie, "[%s | %d] : %s", clients[client_id].nomUtilisateur, client_id, messageBuffer);
 
             if (afficherMessage == 1) {
                 printf("%s", messageBufferModifie);
             }
             
+            //Envoie le message reçu à tous les autres clients
             for (int i = 0; i < num_clients; i++) {
-                if (i != client_id) {
+                if (i != client_id && clients[i].id != -1) {
                     write(clients[i].socket, messageBufferModifie, strlen(messageBufferModifie));
                 }
             }
@@ -63,7 +67,7 @@ void *nouvelleConnexion(void *arg) {
     }
 }
 
-
+//Fonction qui gère les commandes
 void entrerCommande(int signum) {
     printf("\nEntrez votre commande: ");
     char commande[TAILLE_BUFFER];
@@ -73,7 +77,7 @@ void entrerCommande(int signum) {
         char messageBuffer[TAILLE_BUFFER];
         fgets(messageBuffer, TAILLE_BUFFER, stdin);
         char messageBufferModifie[TAILLE_BUFFER];
-        sprintf(messageBufferModifie, "\033[31m[Serveur] : \033[0m%s", messageBuffer);
+        sprintf(messageBufferModifie, "\033[31m[Serveur] : \033[0m%s", messageBuffer); //met le pseudo du serveur en rouge
         for (int i = 0; i < num_clients; i++) {
             write(clients[i].socket, messageBufferModifie, strlen(messageBufferModifie));
         }
@@ -99,6 +103,8 @@ void entrerCommande(int signum) {
     }
 }
 
+//Fonction appelée à chaque démmarage du serveur afin de démarrer la socket sur le port voulu dans le fichier port.txt
+//Gère toutes les erreurs pouvant provenir de la lecture du fichier (données incorrectes, accès impossible, fichier inexistant)
 void lirePort() {
     int fichier = open(nomFichierConfig, O_RDWR | O_CREAT, 0666); //ouvrir
     if (fichier == -1) {
@@ -139,6 +145,7 @@ void lirePort() {
     close(fichier);
 }
 
+//Créer la socket et écoute toutes les nouvelles connexions entrantes
 int main() {
     int client_socket;
     struct sockaddr_in server_addr, client_addr;
@@ -151,7 +158,7 @@ int main() {
         fprintf(stderr, "Erreur lors de la création du socket\n");
         return 1;
     }
-
+    
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(port);

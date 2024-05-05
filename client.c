@@ -15,6 +15,7 @@ char **listeMessages;
 int numMessage = 0;
 
 
+//Fonction qui est un thrad qui est executé à la connexion à un serveur et qui écoute le serveur pour afficher tous les nouveaux messages
 void *recevoirMessages(void *arg) {
     char messageBuffer[TAILLE_BUFFER];
 
@@ -24,15 +25,17 @@ void *recevoirMessages(void *arg) {
         if (read_size <= 0) {
             printf("Déconnecté\n");
             close(client_socket);
-            exit(EXIT_FAILURE);
+            exit(EXIT_SUCCESS);
         }
         if (entrainEcrire == 0) {
             printf("%s", messageBuffer);
         }
         else {
+            //enregistre les messages reçu pendant que le client saisit son message
             listeMessages[numMessage] = (char *)malloc(TAILLE_BUFFER * sizeof(char));
             if (listeMessages[numMessage] == NULL) {
                 fprintf(stderr, "Erreur lors de l'allocation de la mémoire\n");
+                close(client_socket);
                 exit(EXIT_FAILURE);
             }
             strcpy(listeMessages[numMessage], messageBuffer);
@@ -41,10 +44,13 @@ void *recevoirMessages(void *arg) {
     }
 }
 
+
+//Créer ou recréer un tableau en variable commune afin de stocker les messages si l'utilisateur a fait ctrl+c
 void creerTableau() {
     listeMessages = (char **)malloc(MAX_MESSAGE_STOCKE * sizeof(char *));
 }
 
+//Fonction appelée quand l'utilisateur fait ctrl+c, permet de saisir un message à envoyer ou de saisir la commande exit pour quitter le programme 
 void arreterAffichage(int signum) {
     entrainEcrire = 1;
     printf("\nSaisissez votre message: ");
@@ -56,6 +62,7 @@ void arreterAffichage(int signum) {
     }
     write(client_socket, message, strlen(message));
 
+    //affiche tous les messages reçu pendant la saisit du client et réinisialise le tableau des messages
     if (numMessage != 0) {
         for (int i = 0 ; i < numMessage ; i++) {
             printf("%s", listeMessages[i]);
@@ -71,6 +78,8 @@ void arreterAffichage(int signum) {
     entrainEcrire = 0;
 }
 
+
+//Créer le socket en fonction des informations entrées par l'utilisateur pour ensuite se connecter au serveur
 int main() {
     printf("Veuillez entrer les informations de connexion :\n\t- IP (127.0.0.1 par défaut): ");
     char ipServeur[16];
@@ -103,7 +112,7 @@ int main() {
         return 1;
     }
 
-    // Configuration de l'adresse du serveur
+
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(portServeur);
     inet_pton(AF_INET, ipServeur, &server_addr.sin_addr);
@@ -124,7 +133,7 @@ int main() {
     signal(SIGINT, arreterAffichage);
 
     while (1) {
-        pause(); //Attend un signal pour écrire un message
+        pause();
     }
 
     close(client_socket);
